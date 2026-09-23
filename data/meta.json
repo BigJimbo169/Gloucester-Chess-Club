@@ -1,0 +1,11 @@
+{
+  "last_updated": "2026-09-23T09:08:43.029594+00:00",
+  "club_code": "4GLO",
+  "events": [
+    {
+      "event_code": "LN00009272",
+      "label": "North Gloucestershire Division 4"
+    }
+  ],
+  "note": "Seed data captured manually up to 17 Feb 2026; season runs to 30 Apr 2026. Re-run the scraper via GitHub Actions to bring this current."
+}

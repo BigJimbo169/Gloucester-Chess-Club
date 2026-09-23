@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gloucester Chess Club — Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --felt:#123524; --felt-2:#0d2a1b; --ivory:#F1ECDF; --ivory-dim:#c9c2ab;
+  --gold:#C9A24B; --win:#5c8a63; --loss:#a85c4f; --draw:#8a8368; --line:#2a4c39;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px); height:100%;}
+*{box-sizing:border-box;}
+body{margin:0; min-height:100%; background:var(--felt); color:var(--ivory); font-family:'IBM Plex Mono', monospace; font-size:14px;}
+.wrap{max-width:1080px; margin:0 auto; padding:32px 20px 64px;}
+header{margin-bottom:20px; border-bottom:1px solid var(--line); padding-bottom:20px;}
+h1{font-family:'Fraunces', serif; font-weight:700; font-size:clamp(26px,5vw,40px); margin:0 0 6px; letter-spacing:-0.01em;}
+.sub{color:var(--ivory-dim); font-size:13px; max-width:65ch; line-height:1.5;}
+.sub a{color:var(--gold);}
+.updated{font-size:11.5px; color:var(--ivory-dim); margin-top:8px;}
+
+.tabs{display:flex; gap:2px; margin:26px 0 18px; border-bottom:1px solid var(--line);}
+.tab{padding:9px 16px; cursor:pointer; font-size:13px; color:var(--ivory-dim); border-bottom:2px solid transparent;}
+.tab.active{color:var(--gold); border-color:var(--gold);}
+.panel{display:none;} .panel.active{display:block;}
+
+.summary{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1px; background:var(--line); margin:18px 0; border:1px solid var(--line);}
+.card{background:var(--felt-2); padding:16px 18px;}
+.card .n{font-family:'Fraunces',serif; font-size:26px; font-weight:700; color:var(--gold);}
+.card .l{font-size:11px; color:var(--ivory-dim); margin-top:2px;}
+
+.controls{display:flex; flex-wrap:wrap; gap:10px; margin:18px 0;}
+select, input[type=text]{background:var(--felt-2); border:1px solid var(--line); color:var(--ivory); font-family:inherit; font-size:13px; padding:8px 10px; border-radius:2px;}
+select:focus, input:focus{outline:1px solid var(--gold);}
+
+h2{font-family:'Fraunces',serif; font-weight:700; font-size:19px; margin:28px 0 10px;}
+
+table{width:100%; border-collapse:collapse; font-size:12.5px;}
+th{text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); color:var(--ivory-dim); font-weight:500; font-size:11px;}
+td{padding:7px 10px; border-bottom:1px solid rgba(42,76,57,0.5); vertical-align:top;}
+tr:hover td{background:rgba(201,162,75,0.06);}
+.tbl-scroll{overflow-x:auto; border:1px solid var(--line);}
+.res{font-weight:600; white-space:nowrap;}
+.res.win{color:var(--win);} .res.loss{color:var(--loss);} .res.draw{color:var(--draw);}
+.team-tag{font-size:10.5px; color:var(--ivory-dim);}
+.rating{color:var(--ivory-dim); font-size:11.5px;}
+.player-table td, .player-table th{text-align:right;}
+.player-table td:first-child, .player-table th:first-child{text-align:left;}
+.roster-table td, .roster-table th{text-align:center;}
+.roster-table td:nth-child(-n+2), .roster-table th:nth-child(-n+2){text-align:left;}
+.loading, .error{color:var(--ivory-dim); padding:20px 0;}
+.error{color:var(--loss);}
+footer{margin-top:44px; padding-top:16px; border-top:1px solid var(--line); color:var(--ivory-dim); font-size:11.5px; line-height:1.6;}
+footer a{color:var(--gold);}
+::selection{background:var(--gold); color:var(--felt);}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Gloucester Chess Club</h1>
+  <div class="sub">Roster, ratings and league results, scraped from the <a href="https://rating.englishchess.org.uk" target="_blank">ECF rating system</a> and refreshed automatically.</div>
+  <div class="updated" id="updated"></div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" data-panel="results">League results</div>
+  <div class="tab" data-panel="roster">Roster & ratings</div>
+</div>
+
+<div id="loadState" class="loading">Loading data…</div>
+
+<div class="panel active" id="panel-results">
+  <div class="summary" id="summaryCards"></div>
+  <div class="controls">
+    <select id="fTeam"><option value="">All Gloucester teams</option></select>
+    <select id="fOpp"><option value="">All opponents</option></select>
+    <select id="fPlayer"><option value="">All players</option></select>
+    <select id="fResult">
+      <option value="">Any result</option>
+      <option value="win">Wins</option>
+      <option value="loss">Losses</option>
+      <option value="draw">Draws</option>
+    </select>
+  </div>
+
+  <h2>Board-by-board results</h2>
+  <div class="tbl-scroll">
+  <table id="gamesTable">
+    <thead><tr><th>Date</th><th>Match</th><th>Bd</th><th>Gloucester player</th><th>Rtg</th><th>Opponent</th><th>Rtg</th><th>Result</th></tr></thead>
+    <tbody></tbody>
+  </table>
+  </div>
+
+  <h2>Player summary</h2>
+  <div class="tbl-scroll">
+  <table class="player-table" id="playerTable">
+    <thead><tr><th>Player</th><th>Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>Pts</th><th>Score %</th></tr></thead>
+    <tbody></tbody>
+  </table>
+  </div>
+</div>
+
+<div class="panel" id="panel-roster">
+  <div class="controls">
+    <input type="text" id="rosterSearch" placeholder="Search name…">
+  </div>
+  <div class="tbl-scroll">
+  <table class="roster-table" id="rosterTable">
+    <thead><tr><th>Name</th><th>Club</th><th>Std</th><th>Rapid</th><th>Blitz</th><th>Class</th></tr></thead>
+    <tbody></tbody>
+  </table>
+  </div>
+</div>
+
+<footer>
+  Rating suffix K = published this period, P = provisional, A/B/C = estimated. Data is refreshed on a schedule by a GitHub Actions workflow running <code>scraper/scrape.py</code> in this repo — see the README for how to change the schedule or add more events/divisions.
+</footer>
+</div>
+
+<script>
+const GLOUCESTER_TEAMS = ["Gloucester Gargoyles","Gloucester Knightmares"];
+const isGloucester = t => GLOUCESTER_TEAMS.includes(t);
+
+let GAMES = [], ROSTER = [], META = {};
+
+async function loadData(){
+  const loadState = document.getElementById('loadState');
+  try{
+    const [g, r, m] = await Promise.all([
+      fetch('data/games.json').then(r=>r.ok?r.json():Promise.reject(r.status)),
+      fetch('data/roster.json').then(r=>r.ok?r.json():Promise.reject(r.status)),
+      fetch('data/meta.json').then(r=>r.ok?r.json():{}).catch(()=>({})),
+    ]);
+    GAMES = g; ROSTER = r; META = m;
+    loadState.style.display = 'none';
+    if(META.last_updated){
+      document.getElementById('updated').textContent = 'Last updated: ' + new Date(META.last_updated).toLocaleString('en-GB');
+    }
+    initResults();
+    initRoster();
+  }catch(err){
+    loadState.textContent = 'Could not load data/games.json or data/roster.json — if you just opened this file directly, run it through a local server (e.g. `python -m http.server`) or view it on GitHub Pages, since browsers block fetch() on file:// URLs.';
+    loadState.className = 'error';
+    console.error(err);
+  }
+}
+
+// ---- Tabs ----
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('panel-'+t.dataset.panel).classList.add('active');
+  });
+});
+
+// ---- Results ----
+function flip(res){ if(res==="1-0") return "0-1"; if(res==="0-1") return "1-0"; return res; }
+function outcomeOf(res){ if(res==="½-½"||res==="1/2-1/2") return "draw"; if(res==="1-0") return "win"; if(res==="0-1") return "loss"; return "unknown"; }
+
+function buildRows(){
+  const out = [];
+  GAMES.forEach(g=>{
+    const home = g.home, away = g.away;
+    if(isGloucester(home)){
+      out.push({date:g.date, team:home, opp:away, board:g.board, gp:g.p1_name, gpr:g.p1_rating, op:g.p2_name, opr:g.p2_rating, res:g.result, outcome:outcomeOf(g.result)});
+    }
+    if(isGloucester(away)){
+      const flipped = flip(g.result);
+      out.push({date:g.date, team:away, opp:home, board:g.board, gp:g.p2_name, gpr:g.p2_rating, op:g.p1_name, opr:g.p1_rating, res:flipped, outcome:outcomeOf(flipped)});
+    }
+  });
+  return out.sort((a,b)=> (a.date||'').localeCompare(b.date||'') || (a.board||0)-(b.board||0));
+}
+
+let R = [];
+
+function fmtDate(d){ if(!d) return '—'; const dt=new Date(d+'T00:00:00'); return dt.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}); }
+function fmtRating(r){ return r || '—'; }
+
+function populateFilters(){
+  const teamSel=document.getElementById('fTeam'), oppSel=document.getElementById('fOpp'), playerSel=document.getElementById('fPlayer');
+  [...new Set(R.map(r=>r.team))].sort().forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t.replace('Gloucester ','');teamSel.appendChild(o);});
+  [...new Set(R.map(r=>r.opp))].sort().forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;oppSel.appendChild(o);});
+  [...new Set(R.map(r=>r.gp))].sort().forEach(t=>{const o=document.createElement('option');o.value=t;o.textContent=t;playerSel.appendChild(o);});
+}
+
+function renderSummary(f){
+  const w=f.filter(r=>r.outcome==='win').length, d=f.filter(r=>r.outcome==='draw').length, l=f.filter(r=>r.outcome==='loss').length;
+  const pts=w+d*0.5;
+  const cards=[[f.length,'boards played'],[w,'wins'],[d,'draws'],[l,'losses'],[f.length?(pts/f.length*100).toFixed(0)+'%':'—','score rate']];
+  document.getElementById('summaryCards').innerHTML=cards.map(([n,l2])=>`<div class="card"><div class="n">${n}</div><div class="l">${l2}</div></div>`).join('');
+}
+
+function renderGames(f){
+  const tbody=document.querySelector('#gamesTable tbody');
+  tbody.innerHTML = f.map(r=>`<tr><td>${fmtDate(r.date)}</td><td class="team-tag">${r.team.replace('Gloucester ','')} v ${r.opp}</td><td>${r.board||'—'}</td><td>${r.gp}</td><td class="rating">${fmtRating(r.gpr)}</td><td>${r.op}</td><td class="rating">${fmtRating(r.opr)}</td><td class="res ${r.outcome}">${r.res}</td></tr>`).join('') || `<tr><td colspan="8" style="color:var(--ivory-dim)">No games match these filters.</td></tr>`;
+}
+
+function renderPlayers(f){
+  const by={};
+  f.forEach(r=>{const key=r.gp+'||'+r.team; if(!by[key])by[key]={name:r.gp,team:r.team,p:0,w:0,d:0,l:0}; const s=by[key]; s.p++; if(r.outcome==='win')s.w++; else if(r.outcome==='draw')s.d++; else s.l++;});
+  const list=Object.values(by).sort((a,b)=>(b.w+b.d*0.5)/b.p-(a.w+a.d*0.5)/a.p || b.p-a.p);
+  document.querySelector('#playerTable tbody').innerHTML = list.map(s=>{const pts=s.w+s.d*0.5; const pct=(pts/s.p*100).toFixed(0); return `<tr><td>${s.name}</td><td class="team-tag">${s.team.replace('Gloucester ','')}</td><td>${s.p}</td><td>${s.w}</td><td>${s.d}</td><td>${s.l}</td><td>${pts}</td><td>${pct}%</td></tr>`;}).join('') || `<tr><td colspan="8" style="color:var(--ivory-dim)">No games match these filters.</td></tr>`;
+}
+
+function applyFilters(){
+  const f={team:document.getElementById('fTeam').value, opp:document.getElementById('fOpp').value, player:document.getElementById('fPlayer').value, result:document.getElementById('fResult').value};
+  let filtered=R;
+  if(f.team) filtered=filtered.filter(r=>r.team===f.team);
+  if(f.opp) filtered=filtered.filter(r=>r.opp===f.opp);
+  if(f.player) filtered=filtered.filter(r=>r.gp===f.player);
+  if(f.result) filtered=filtered.filter(r=>r.outcome===f.result);
+  renderSummary(filtered); renderGames(filtered); renderPlayers(filtered);
+}
+
+function initResults(){
+  R = buildRows();
+  populateFilters();
+  ['fTeam','fOpp','fPlayer','fResult'].forEach(id=>document.getElementById(id).addEventListener('change', applyFilters));
+  applyFilters();
+}
+
+// ---- Roster ----
+function initRoster(){
+  renderRoster(ROSTER);
+  document.getElementById('rosterSearch').addEventListener('input', e=>{
+    const q = e.target.value.toLowerCase();
+    renderRoster(ROSTER.filter(p => `${p.first_name} ${p.last_name}`.toLowerCase().includes(q)));
+  });
+}
+function renderRoster(list){
+  const tbody = document.querySelector('#rosterTable tbody');
+  tbody.innerHTML = list.map(p=>`<tr><td>${p.first_name||''} ${p.last_name||''}</td><td class="team-tag">${p.club||'—'}</td><td>${p.std||'—'}</td><td>${p.rapid||'—'}</td><td>${p.blitz||'—'}</td><td class="team-tag">${p.ecf_class||'—'}</td></tr>`).join('') || `<tr><td colspan="6" style="color:var(--ivory-dim)">No matches.</td></tr>`;
+}
+
+loadData();
+</script>
+</body>
+</html>
