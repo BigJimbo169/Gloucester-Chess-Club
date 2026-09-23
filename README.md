@@ -12,10 +12,39 @@ scraper/scrape.py       # the scraper (Python, requests + BeautifulSoup)
 scraper/requirements.txt
 data/roster.json        # club roster + current ratings (seeded with a snapshot)
 data/games.json         # league board-by-board results (seeded with a snapshot)
-data/meta.json          # last-updated timestamp + which events are tracked
-index.html              # the dashboard — reads the three JSON files above
+data/meta.json           # last-updated timestamp + which events are tracked
+data/fact_table.json     # hand-maintained: player -> team(s) + captaincy (seed/example data)
+index.html               # the dashboard — reads roster.json, games.json, meta.json
+squad.html                # captain's squad-builder tool — reads fact_table.json, roster.json
 .github/workflows/update-data.yml   # scheduled scraper run
 ```
+
+### `data/fact_table.json`
+
+This one isn't scraped — the ECF's roster and games APIs don't carry team affiliation
+or captaincy, so this file is maintained by hand (or however you choose to generate
+it) as the source of truth for "who plays for which team, and who captains it":
+
+```json
+[
+  {
+    "ecf_code": "356560K",
+    "name": "Steve Martin",
+    "teams": [
+      { "name": "Gloucester Gargoyles", "role": "captain" },
+      { "name": "Gloucester Knightmares", "role": "player" }
+    ]
+  }
+]
+```
+
+- `teams` is an array so a player who turns out for more than one team just gets
+  more than one entry — no special-casing needed.
+- `role` is per team-membership, not per player, so someone can captain one team
+  and be a plain player on another. Co-captains work too: just give two different
+  players `"role": "captain"` for the same team name.
+- The seed data in the repo covers a handful of players as an example of the
+  shape — replace it with the full squad list.
 
 The `data/*.json` files are **seeded with a one-off manual pull** (up to 17 Feb 2026
 for league results) so the dashboard works the moment you deploy it. Once the GitHub
@@ -57,6 +86,21 @@ opening the results page for the division/season you want, and copying the
 `event_code=` value from its URL. Decrementing the numeric part of an event code
 by 1 generally steps to the division above within the same league, if that helps
 you find sibling divisions quickly.
+
+## Squad creator (`squad.html`)
+
+A page for captains: pick a team, see who's captain, build a squad by clicking
+through the eligible player pool, reorder with the ↑/↓ buttons, then export as
+either a copy-pasteable text list or a downloadable team-sheet image (via
+[html2canvas](https://html2canvas.hertzen.com/), loaded from a CDN — no install
+needed).
+
+Nothing is saved server-side — this is a static site with no backend, so a built
+squad only exists in that browser tab until it's exported. That's intentional
+rather than a missing feature: exporting is the "save."
+
+If `data/fact_table.json` isn't there or doesn't match the schema above, the page
+shows an error explaining the expected shape rather than failing silently.
 
 ## Known limitations
 
