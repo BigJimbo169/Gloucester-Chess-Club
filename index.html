@@ -407,7 +407,7 @@ function renderSquad(){
     const r = p ? primaryRating(p) : null;
     return `<div class="squad-row" draggable="true" data-code="${code}">
       <span class="handle">⠿</span>
-      <span class="num">Board ${i+1}</span>
+      <span class="num">Bd ${i+1}</span>
       <span>${p?nickName(p):code}${p&&isCaptain(p,currentTeam)?' <span class="cap">(C)</span>':''}</span>
       <span class="rtg" style="margin-left:auto; margin-right:8px;">${r ?? '—'}</span>
       <span class="btns"><button data-act="remove">✕</button></span>
