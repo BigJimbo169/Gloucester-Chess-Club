@@ -118,37 +118,40 @@ def scrape_profile(ecf_code):
 
 # ---- Game history (best effort, unverified) -----------------------------------
 
+RESULT_MAP = {"1": "W", "0": "L", "5": "D"}
+
+def parse_opponent_name(raw):
+    """API returns 'Surname, Forename' -- flip it for display."""
+    if not raw or "," not in raw:
+        return raw
+    surname, forename = [s.strip() for s in raw.split(",", 1)]
+    return f"{forename} {surname}"
+
 def scrape_games(ecf_code):
-    """
-    Attempts the documented /api/games endpoint for each domain. Every manual
-    test of this endpoint so far has been blocked as bot traffic -- this may
-    behave differently from a GitHub Actions runner's IP, but treat an empty
-    result as the expected outcome until proven otherwise. Field names below
-    (opponent_name, result, event_name, etc.) are guesses based on the
-    endpoint's documented *description*, not a confirmed response schema --
-    the full raw record is kept under "raw" either way so you can correct
-    these once you see a real payload.
-    """
     pno = player_no(ecf_code)
     if not pno:
         return [], "no numeric player_no could be parsed from ECF code"
 
-    games = []
-    error = None
+    games, error = [], None
     for code, domain in DOMAINS.items():
         try:
             r = fetch(f"{BASE}/api/games", player_no=pno, domain=code, limit=100)
-            data = r.json()
-            entries = data.get("games", data) if isinstance(data, dict) else data
+            payload = r.json()
+            entries = payload.get("data", {}).get("games", [])
             for g in entries:
                 games.append({
                     "ecf_code": ecf_code,
                     "domain": domain,
-                    "date": g.get("date") or g.get("game_date"),
-                    "opponent": g.get("opponent_name") or g.get("opponent"),
-                    "opponent_rating": g.get("opponent_rating"),
-                    "result": g.get("result") or g.get("score"),
-                    "event": g.get("event_name") or g.get("event"),
+                    "date": g.get("game_date"),
+                    "colour": g.get("colour"),
+                    "result": RESULT_MAP.get(str(g.get("score")), "?"),
+                    "opponent_name": parse_opponent_name(g.get("opponent_name")),
+                    "opponent_no": g.get("opponent_no"),
+                    "opponent_rating": int(g["opponent_rating"]) if g.get("opponent_rating") not in (None, "") else None,
+                    "player_rating": int(g["player_rating"]) if g.get("player_rating") not in (None, "") else None,
+                    "player_rating_suffix": g.get("increment"),
+                    "event_code": g.get("event_code"),
+                    "event_name": g.get("event_name"),
                     "raw": g,
                 })
         except Exception as e:
