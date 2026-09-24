@@ -1,0 +1,308 @@
+[
+  {
+    "ecf_code": "376263E",
+    "first_name": "Mike",
+    "surname": "Wildsmith",
+    "nickname": "Oh Dear",
+    "teams": [
+      {
+        "team_name": "Knightwatch",
+        "role": "player"
+      },
+      {
+        "team_name": "Rookies",
+        "role": "player"
+      },
+      {
+        "team_name": "Gladiators",
+        "role": "player"
+      },
+      {
+        "team_name": "Dragons",
+        "role": "player"
+      }
+    ],
+    "std_rating": 1117,
+    "rapid_rating": 1116,
+    "blitz_rating": null
+  },
+  {
+    "ecf_code": "349389B",
+    "first_name": "Puhal",
+    "surname": "Vijayan",
+    "teams": [
+      {
+        "team_name": "Knightwatch",
+        "role": "player"
+      }
+    ],
+    "std_rating": 1095,
+    "rapid_rating": 981,
+    "blitz_rating": null
+  },
+  {
+    "ecf_code": "367625A",
+    "first_name": "Benjamin",
+    "surname": "Watkinson",
+    "teams": [
+      {
+        "team_name": "Rookies",
+        "role": "player"
+      }
+    ],
+    "std_rating": 1115,
+    "rapid_rating": 1047,
+    "blitz_rating": null
+  },
+  {
+    "ecf_code": "265766B",
+    "first_name": "Tristan",
+    "surname": "Choy",
+    "nickname": "Triple T",
+    "teams": [
+      {
+        "team_name": "Rookies",
+        "role": "player"
+      }
+    ],
+    "std_rating": 1211,
+    "rapid_rating": 1344,
+    "blitz_rating": null
+  },
+  {
+    "ecf_code": "346627K",
+    "first_name": "Guhan",
+    "surname": "Vijayan",
+    "teams": [
+      {
+        "team_name": "Knightwatch",
+        "role": "player"
+      }
+    ],
+    "std_rating": 1216,
+    "rapid_rating": 1007,
+    "blitz_rating": null
+  },
+  {
+    "ecf_code": "380062D",
+    "first_name": "Douglas",
+    "surname": "Mackay Brown",
+    "nickname": "The Undertaker",
+    "teams": [
+      {
+        "team_name": "Knightwatch",
+        "role": "player"
+      }
+    ],
+    "std_rating": 1225,
+    "rapid_rating": 1336,
+    "blitz_rating": null
+  },
+  {
+    "ecf_code": "343105J",
+    "first_name": "Tito",
+    "surname": "Ajidagba",
+    "teams": [
+      {
+        "team_name": "Rookies",
+        "role": "player"
+      }
+    ],
+    "std_rating": 1273,
+    "rapid_rating": 1201,
+    "blitz_rating": null
+  },
+  {
+    "ecf_code": "387537E",
+    "first_name": "James",
+    "surname": "Brammer",
+    "nickname": "The Hammer",
+    "teams": [
+      {
+        "team_name": "Gladiators",
+        "role": "player"
+      },
+      {
+        "team_name": "Knightwatch",
+        "role": "captain"
+      }
+    ],
+    "std_rating": 1579,
+    "rapid_rating": 1217,
+    "blitz_rating": null
+  },
+  {
+    "ecf_code": "389947A",
+    "first_name": "Xan",
+    "surname": "Allison",
+    "nickname": "Sweet Cheeks",
+    "teams": [
+      {
+        "team_name": "Gladiators",
+        "role": "player"
+      },
+      {
+        "team_name": "Knightwatch",
+        "role": "captain"
+      }
+    ],
+    "std_rating": null,
+    "rapid_rating": 1506,
+    "blitz_rating": null
+  },
+  {
+    "ecf_code": "356560K",
+    "first_name": "Steve",
+    "surname": "Martin",
+    "teams": [
+      {
+        "team_name": "Dragons",
+        "role": "player"
+      },
+      {
+        "team_name": "Rookies",
+        "role": "captain"
+      }
+    ],
+    "std_rating": 1423,
+    "rapid_rating": 1372,
+    "blitz_rating": null
+  },
+  {
+    "ecf_code": "378211G",
+    "first_name": "Daniel",
+    "surname": "Crowe",
+    "nickname": "The Judge",
+    "teams": [
+      {
+        "team_name": "Gladiators",
+        "role": "player"
+      },
+      {
+        "team_name": "Knightwatch",
+        "role": "player"
+      }
+    ],
+    "std_rating": 1431,
+    "rapid_rating": 1513,
+    "blitz_rating": 1366
+  },
+  {
+    "ecf_code": "378611A",
+    "first_name": "Liam",
+    "surname": "Perkins",
+    "teams": [
+      {
+        "team_name": "Dragons",
+        "role": "player"
+      },
+      {
+        "team_name": "Rookies",
+        "role": "player"
+      }
+    ],
+    "std_rating": 1438,
+    "rapid_rating": 1657,
+    "blitz_rating": 1365
+  },
+  {
+    "ecf_code": "181380J",
+    "first_name": "Richard",
+    "surname": "Sida",
+    "teams": [
+      {
+        "team_name": "Gladiators",
+        "role": "captain"
+      }
+    ],
+    "std_rating": 1586,
+    "rapid_rating": 1568,
+    "blitz_rating": null
+  },
+  {
+    "ecf_code": "154463K",
+    "first_name": "Pat",
+    "surname": "Baker",
+    "teams": [
+      {
+        "team_name": "Gladiators",
+        "role": "player"
+      }
+    ],
+    "std_rating": 1613,
+    "rapid_rating": 1708,
+    "blitz_rating": null
+  },
+  {
+    "ecf_code": "370117H",
+    "first_name": "Dexter",
+    "surname": "Wildsmith",
+    "nickname": "Aura",
+    "teams": [
+      {
+        "team_name": "Dragons",
+        "role": "player"
+      }
+    ],
+    "std_rating": 1661,
+    "rapid_rating": 1718,
+    "blitz_rating": 1657
+  },
+  {
+    "ecf_code": "278536F",
+    "first_name": "John",
+    "surname": "Lightowler",
+    "teams": [
+      {
+        "team_name": "Gladiators",
+        "role": "player"
+      }
+    ],
+    "std_rating": 1737,
+    "rapid_rating": 1632,
+    "blitz_rating": null
+  },
+  {
+    "ecf_code": "345050J",
+    "first_name": "Josh",
+    "surname": "Crompton",
+    "teams": [
+      {
+        "team_name": "Dragons",
+        "role": "player"
+      }
+    ],
+    "std_rating": 1784,
+    "rapid_rating": 1541,
+    "blitz_rating": 1549
+  },
+  {
+    "ecf_code": "288516F",
+    "first_name": "Matthew",
+    "surname": "Grieve",
+    "nickname": "Big Dog",
+    "teams": [
+      {
+        "team_name": "Dragons",
+        "role": "captain"
+      }
+    ],
+    "std_rating": 1890,
+    "rapid_rating": 1818,
+    "blitz_rating": null
+  },
+  {
+    "ecf_code": "380884B",
+    "first_name": "Peter",
+    "surname": "Diing",
+    "teams": [
+      {
+        "team_name": "Gladiators",
+        "role": "player"
+      }
+    ],
+    "std_rating": 1910,
+    "rapid_rating": null,
+    "blitz_rating": null
+  }
+]

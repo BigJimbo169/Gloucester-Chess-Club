@@ -1,0 +1,10 @@
+{
+  "last_updated": "2026-09-24T08:50:15.341102+00:00",
+  "player_count": 19,
+  "rating_history_rows": 75,
+  "games_rows": 0,
+  "warnings": [
+    "Seed data only covers 3 players' rating history (Tito Ajidagba, Xan Allison, Patrick Baker) from earlier manual pulls -- run scraper/scrape.py for the full squad.",
+    "games.json is empty -- the /api/games endpoint is unverified, see README."
+  ]
+}

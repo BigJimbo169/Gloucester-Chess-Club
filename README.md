@@ -1,140 +1,132 @@
 # Gloucester Chess Club Tracker
 
-Scrapes the [ECF rating system](https://rating.englishchess.org.uk) for Gloucester
-Chess Club's roster, ratings, and league results, and publishes them as a static
-dashboard on GitHub Pages. A scheduled GitHub Action re-runs the scraper and commits
-fresh data automatically.
+A hand-maintained roster (`data/fact_table.json`) drives a scraper that pulls
+current ratings, rating history, and (best-effort) game history from the
+[ECF rating system](https://rating.englishchess.org.uk), and a static
+dashboard on GitHub Pages presents it: a rating-progression view with
+hoverable match detail, and a drag-and-drop squad builder for captains.
 
 ## What's in here
 
 ```
-scraper/scrape.py       # the scraper (Python, requests + BeautifulSoup)
+data/fact_table.json      # hand-maintained: ecf_code, name, nickname, team(s) + captaincy
+data/players.json         # generated: fact_table.json + current ratings, merged
+data/rating_history.json  # generated: one row per player/domain/month
+data/games.json           # generated: one row per player/domain/game (best-effort, may be sparse)
+data/meta.json            # generated: last-run timestamp, counts, warnings
+scraper/scrape.py         # the scraper (Python, requests + BeautifulSoup)
 scraper/requirements.txt
-data/roster.json        # club roster + current ratings (seeded with a snapshot)
-data/games.json         # league board-by-board results (seeded with a snapshot)
-data/meta.json           # last-updated timestamp + which events are tracked
-data/fact_table.json     # hand-maintained: player -> team(s) + captaincy (seed/example data)
-index.html               # the dashboard — reads roster.json, games.json, meta.json
-squad.html                # captain's squad-builder tool — reads fact_table.json, roster.json
+index.html                # the dashboard — two tabs, reads the four generated files above
 .github/workflows/update-data.yml   # scheduled scraper run
 ```
 
-### `data/fact_table.json`
+## `data/fact_table.json` — the one file you maintain by hand
 
-This one isn't scraped — the ECF's roster and games APIs don't carry team affiliation
-or captaincy, so this file is maintained by hand (or however you choose to generate
-it) as the source of truth for "who plays for which team, and who captains it":
+The ECF's ratings data has no concept of your club's own teams or who
+captains them, so this file is the source of truth for that. Everything else
+is derived from it plus the ECF site.
 
 ```json
 [
   {
     "ecf_code": "356560K",
-    "name": "Steve Martin",
+    "first_name": "Steve",
+    "surname": "Martin",
+    "nickname": "Marto",
     "teams": [
-      { "name": "Gloucester Gargoyles", "role": "captain" },
-      { "name": "Gloucester Knightmares", "role": "player" }
+      { "team_name": "Gladiators", "role": "captain" },
+      { "team_name": "Dragons", "role": "player" }
     ]
   }
 ]
 ```
 
-- `teams` is an array so a player who turns out for more than one team just gets
-  more than one entry — no special-casing needed.
-- `role` is per team-membership, not per player, so someone can captain one team
-  and be a plain player on another. Co-captains work too: just give two different
-  players `"role": "captain"` for the same team name.
-- The seed data in the repo covers a handful of players as an example of the
-  shape — replace it with the full squad list.
-
-The `data/*.json` files are **seeded with a one-off manual pull** (up to 17 Feb 2026
-for league results) so the dashboard works the moment you deploy it. Once the GitHub
-Action runs, it'll overwrite these with a full, current scrape.
+- `nickname` is optional — omit the key entirely for players without one,
+  rather than setting it to `""`.
+- `teams` is an array: a player on more than one team just gets more than one
+  entry. `role` is per team-membership, so someone can captain one team and
+  be a plain player on another, and two players can both hold
+  `"role": "captain"` on the same team for co-captains.
+- Names are written out by hand here rather than pulled from the API, since
+  it's simpler to type once than to rely on an unverified name field from a
+  third-party endpoint (see limitations below).
 
 ## 1. Set up the repo
 
-1. Create a new GitHub repository and push these files to it (`main` branch).
-2. Go to **Settings → Pages**, and under "Build and deployment" choose
-   **Deploy from a branch**, branch `main`, folder `/ (root)`. Save.
-3. Your dashboard will be live at `https://<your-username>.github.io/<repo-name>/`
-   within a minute or two.
+1. Push these files to a new GitHub repository (`main` branch).
+2. **Settings → Pages** → Deploy from a branch → `main` / `(root)` → Save.
+3. Dashboard is live at `https://<you>.github.io/<repo>/` shortly after.
 
 ## 2. Turn on the scheduled scraper
 
-The workflow in `.github/workflows/update-data.yml` is already set to run every
-Monday at 06:00 UTC and commit whatever changed in `data/`. Nothing extra to
-configure — Actions are on by default for public repos. To run it immediately
-rather than waiting for Monday: go to the **Actions** tab → "Update chess data" →
-**Run workflow**.
+`.github/workflows/update-data.yml` runs `scraper/scrape.py` every Monday at
+06:00 UTC and commits whatever changed under `data/`. To run it immediately:
+**Actions** tab → "Update chess data" → **Run workflow**. Change the `cron`
+line to adjust frequency.
 
-To change how often it runs, edit the `cron` line — for example `0 6 * * *` for
-daily, or `0 6 1,15 * *` for twice a month. ([crontab.guru](https://crontab.guru)
-is handy for building these.)
+## The dashboard
 
-## 3. Track more divisions / seasons
+**Rating progression tab** — filter by team, individual player, time control
+(Standard/Rapid/Blitz), and season (`25/26`-style labels, running
+September–August, derived automatically from the data — no need to maintain
+these anywhere). Selecting a team with no individual player chosen plots
+every eligible player as a separate line, for comparison. Hovering a point
+shows the club's published rating for that month plus any games on record
+for that player/domain/month — since the ECF publishes a **monthly** rating
+rather than updating live per game, a hover point can represent more than
+one game, not exactly one.
 
-`scraper/scrape.py` has an `EVENTS` list near the top:
-
-```python
-EVENTS = [
-    ("LN00009272", 1, "North Gloucestershire Division 4"),
-]
-```
-
-Add a tuple for each additional event you want pulled in. Find an event's code by
-browsing [the ECF events list](https://rating.englishchess.org.uk/events/list),
-opening the results page for the division/season you want, and copying the
-`event_code=` value from its URL. Decrementing the numeric part of an event code
-by 1 generally steps to the division above within the same league, if that helps
-you find sibling divisions quickly.
-
-## Squad creator (`squad.html`)
-
-A page for captains: pick a team, see who's captain, build a squad by clicking
-through the eligible player pool, reorder with the ↑/↓ buttons, then export as
-either a copy-pasteable text list or a downloadable team-sheet image (via
-[html2canvas](https://html2canvas.hertzen.com/), loaded from a CDN — no install
-needed).
-
-Nothing is saved server-side — this is a static site with no backend, so a built
-squad only exists in that browser tab until it's exported. That's intentional
-rather than a missing feature: exporting is the "save."
-
-If `data/fact_table.json` isn't there or doesn't match the schema above, the page
-shows an error explaining the expected shape rather than failing silently.
+**Squad builder tab** — pick a team to see its captain(s) banner and its
+eligible player pool. Click a player to add them to the squad; drag by the
+⠿ handle to set board order; ✕ to remove. Sum and average rating (using
+`std_rating`, falling back to `rapid_rating` then `blitz_rating` if a player
+has no standard-play figure) update live at the bottom of the squad list, and
+are included in both exports. Names throughout this tab render as
+`Firstname "Nickname" Surname` where a nickname exists. Nothing is saved
+anywhere — this is a static site with no backend — so exporting (copy as
+text, or download as an image via
+[html2canvas](https://html2canvas.hertzen.com/), loaded from a CDN) is the
+only way a built squad survives past that browser tab.
 
 ## Known limitations
 
-- **No official API for league results.** The ECF's public API (documented at
-  `rating.englishchess.org.uk/help/api`) covers players, clubs, ratings, and
-  individual game history — but not league/event results. `scrape.py` parses the
-  HTML results page directly, which means it's more fragile: if the ECF changes
-  that page's markup, the parsing logic in `parse_fixture_table()` may need a
-  small update. It's written defensively (skips rows it can't parse rather than
-  crashing) but hasn't been run against live data by an automated test — check the
-  Action's run log after the first live run to confirm it found the expected
-  number of games.
-- **Per-player full game history isn't scraped.** The ECF blocks automated
-  requests to `/players/games?...` (the endpoint listing an individual player's
-  full game history) as bot traffic. A GitHub Actions runner has a normal outbound
-  IP so this *may* work better there than it did in the environment this was
-  built in — worth testing — but it's not wired up in `scrape.py` currently.
-  Individual player rating-history pages (`/players?ECF_code=...`, showing
-  monthly rating over time) were *not* blocked, so that's a reasonable next
-  addition if you want longer-run rating-progression charts per player.
-- **Roster field names are best-effort.** `scrape_roster()` reads the ECF's JSON
-  club-players API, but this repo was built without direct access to inspect that
-  endpoint's raw response — the code guesses at likely field names and falls back
-  gracefully, keeping the full raw record in `roster.json` under `"raw"` either
-  way. If a field comes through empty after your first live run, check `"raw"`
-  for the actual key name and adjust `scrape_roster()` accordingly.
+- **The game history endpoint is unverified.** `/api/games` is documented to
+  exist but has blocked every manual request made against it while building
+  this — it may behave differently from a GitHub Actions runner's IP, but
+  until proven otherwise, expect `data/games.json` to come back sparse or
+  empty, and hover tooltips in the progression chart to show a rating with
+  no game list beneath it. The seed data ships with this file empty for that
+  reason. `scrape_games()` keeps each raw API record under `"raw"` so field
+  names (currently guessed: `opponent_name`, `result`, `event_name`, etc.)
+  are easy to correct once a real response is seen.
+- **Rating-history page structure is a best-effort match**, not a
+  machine-verified one. `scrape_profile()` looks for "Standard" / "Rapid" /
+  "Blitz" headings each followed by a month/rating table, matching what
+  manual testing showed — if a run comes back with unexpectedly empty
+  history for players who should have plenty, check one player's profile
+  page HTML directly and adjust the selectors in `scrape_profile()`.
+- **League/team results scraping has been removed** from this version
+  (previously pulled from the ECF's HTML results pages) — that's being
+  reworked separately. `games.json` in this version is a flat per-player
+  list with no notion of which team a game was played for; if/when
+  team-level results come back, expect a join against a small fixtures table
+  (date + team + opponent) rather than a field baked into the games data
+  itself, since the underlying per-player game record likely has no team
+  concept at all.
+- **Squad totals use whichever primary rating a player has** — standard,
+  falling back to rapid then blitz — rather than requiring a specific time
+  control. A squad with a mix of players who only have, say, a rapid rating
+  will silently blend rapid and standard figures into one sum/average. Worth
+  keeping in mind for squads spanning very different player pools; not
+  currently flagged in the UI beyond the "N player(s) have no rating on
+  file" note for players with none at all.
 
 ## Local development
 
 ```bash
 pip install -r scraper/requirements.txt
-python scraper/scrape.py          # writes fresh data/*.json
-python -m http.server             # serve index.html locally (needed — browsers
-                                   # block fetch() against file:// URLs)
+python scraper/scrape.py     # writes fresh data/*.json from fact_table.json
+python -m http.server        # serve locally -- browsers block fetch() on file://
 ```
 
 Then open `http://localhost:8000`.
